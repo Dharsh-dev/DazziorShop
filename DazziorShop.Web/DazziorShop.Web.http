@@ -1,0 +1,6 @@
+@DazziorShop.Web_HostAddress = http://localhost:5145
+
+GET {{DazziorShop.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
