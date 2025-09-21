@@ -10,21 +10,23 @@ namespace DazziorShop.Web.Controllers.v2
     [ApiController]
     [Route("api/v{version:apiVersion}/brand")]
     [ApiVersion("2.0")]
-    public class Brandv2Controller : ControllerBase
+    public class BrandController : ControllerBase
     {
         private readonly IBrandService _brandService;
         protected APIResponse _response;
 
-        public Brandv2Controller(IBrandService brandService)
+        public BrandController(IBrandService brandService)
         {
             _brandService = brandService;
             _response = new APIResponse();
         }
 
         [HttpGet("ping")]
+        [MapToApiVersion("2.0")]
         public IActionResult Ping() => Ok("Hello from API version 2.0");
 
         [HttpGet("all")]
+        [MapToApiVersion("2.0")]
         public async Task<ActionResult<APIResponse>> Get()
         {
             try
@@ -43,6 +45,7 @@ namespace DazziorShop.Web.Controllers.v2
         }
 
         [HttpGet("Details/{id}")]
+        [MapToApiVersion("2.0")]
         public async Task<ActionResult<APIResponse>> Get(int id)
         {
             try

@@ -127,7 +127,10 @@ if (app.Environment.IsDevelopment())
         var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
         foreach (var description in provider.ApiVersionDescriptions)
         {
-            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
+            options.SwaggerEndpoint(
+             $"/swagger/{description.GroupName}/swagger.json",
+             $"Dazzior API v{description.ApiVersion}"
+             );
         }
     });
 }

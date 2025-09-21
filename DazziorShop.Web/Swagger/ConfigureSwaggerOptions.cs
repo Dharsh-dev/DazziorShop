@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
@@ -16,12 +16,13 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
     {
         foreach (var description in _provider.ApiVersionDescriptions)
         {
-            options.SwaggerDoc(description.GroupName,
-                new OpenApiInfo()
-                {
-                    Title = $"My API {description.ApiVersion}",
-                    Version = description.ApiVersion.ToString()
-                });
+            // 👇 This is the magic line
+            options.SwaggerDoc(description.GroupName, new OpenApiInfo
+            {
+                Title = $"Dazzior API {description.ApiVersion}", // 👈 Custom title
+                Version = description.ApiVersion.ToString(),
+                Description = "Your API description here"
+            });
         }
     }
 }
