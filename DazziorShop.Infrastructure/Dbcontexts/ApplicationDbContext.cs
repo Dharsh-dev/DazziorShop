@@ -1,4 +1,7 @@
-﻿using DazziorShop.Domain.Model;
+﻿using DazziorShop.Application.Common;
+using DazziorShop.Domain.Model;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,12 +11,14 @@ using System.Threading.Tasks;
 
 namespace DazziorShop.Infrastructure.Dbcontexts
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
         }
         public DbSet<Category>Category { get; set; }
+        public DbSet<Brand>Brand { get; set; }
+        public DbSet<Product>Product { get; set; }
     }
 }

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace DazziorShop.Application.Common
 {
-    partial class APIResponse
+    public class APIResponse
     {
         public HttpStatusCode StatusCode { get; set; }
-        public bool IsSuceess { get; set; } = false;
+        public bool IsSuccess { get; set; } = false;
         public object Result { get; set; }
         public string DisplayMessage { get; set; } = "";
         public List<APIError> Errors { get; set; } = new();
