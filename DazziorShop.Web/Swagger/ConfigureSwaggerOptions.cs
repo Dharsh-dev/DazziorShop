@@ -21,7 +21,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             {
                 Title = $"Dazzior API {description.ApiVersion}", // 👈 Custom title
                 Version = description.ApiVersion.ToString(),
-                Description = "Your API description here"
+                Description = "Developed by DharshDev"
             });
         }
     }

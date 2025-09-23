@@ -20,12 +20,14 @@ namespace DazziorShop.Web.Controllers.v1
         public IActionResult Ping() => Ok("Hello from API version 1.0");
 
         private readonly IBrandService _brandService;
+        private readonly ILogger<BrandController> _logger;
         protected APIResponse _response;
 
-        public BrandController(IBrandService brandService)
+        public BrandController(IBrandService brandService, ILogger<BrandController> logger)
         {
             _brandService = brandService;
             _response = new APIResponse();
+            _logger = logger;
         }
 
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -33,16 +35,18 @@ namespace DazziorShop.Web.Controllers.v1
         [HttpGet("all")]
         public async Task<ActionResult<APIResponse>> Get()
         {
-
             try
             {
                 var brands = await _brandService.GetAllAsync();
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
                 _response.Result = brands;
+
+                _logger.LogInformation("**********************************************Records Fetched*********************************************************");
             }
             catch (Exception)
             {
+                _logger.LogError("******************************************************Brand Controller Get Function Failed*******************************************************");
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.AddError(CommonMessage.SystemError);
                 //_response.AddError(ex.Message.ToString());

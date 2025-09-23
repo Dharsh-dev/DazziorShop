@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Net;
 using System.Text;
 
@@ -37,6 +38,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddResponseCaching();
+
 // -------------------- API Versioning -------------------- //
 builder.Services.AddApiVersioning(options =>
 {
@@ -53,8 +56,22 @@ builder.Services.AddApiVersioning(options =>
 // -------------------- Controllers -------------------- //
 builder.Services.AddControllers(options =>
 {
-    options.CacheProfiles.Add("Default", new CacheProfile { Duration = 30 });
+    options.CacheProfiles.Add("Default", new CacheProfile 
+    { 
+        Duration = 30 
+    });
 });
+
+builder.Host.UseSerilog((ContextBoundObject, config) =>
+{
+    config.WriteTo.File("Log/log.txt", rollingInterval: RollingInterval.Day);
+
+    if (ContextBoundObject.HostingEnvironment.IsProduction() == false)
+    {
+        config.WriteTo.Console();
+    }
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 // -------------------- JWT Authentication -------------------- //
@@ -79,8 +96,42 @@ builder.Services.AddAuthentication(options =>
 });
 
 // -------------------- Swagger -------------------- //
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // JWT Security Definition
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        Description = @"JWT Authorization header using the Bearer scheme.
+                        Enter 'Bearer' [space] and then your token in the input below.
+                        Example: 'Bearer 12345abcdef'"
+    });
 
+    // Security Requirement
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "Bearer",
+                Name = "Authorization",
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
+
+    // Optional: Include XML comments if needed
+    // options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "MyApi.xml"));
+});
 //{
 //    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Dazzior API", Version = "v1" });
 //    options.SwaggerDoc("v2", new OpenApiInfo { Title = "Dazzior API", Version = "v2" });
@@ -119,25 +170,23 @@ UpdateDatabaseAsync(app);
 await SeedData.SeedRoles(app.Services);
 
 // -------------------- Swagger UI -------------------- //
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+    foreach (var description in provider.ApiVersionDescriptions)
     {
-        var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-        foreach (var description in provider.ApiVersionDescriptions)
-        {
-            options.SwaggerEndpoint(
-             $"/swagger/{description.GroupName}/swagger.json",
-             $"Dazzior API v{description.ApiVersion}"
-             );
-        }
-    });
-}
+        options.SwaggerEndpoint(
+         $"/swagger/{description.GroupName}/swagger.json",
+         $"Dazzior API v{description.ApiVersion}"
+         );
+    }
+});
 
 // -------------------- Middleware -------------------- //
 app.UseCors("AllowAll");
-//app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
